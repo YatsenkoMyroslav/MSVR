@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ua"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+
+    <title>PA#1</title>
+    <style>
+        body {
+            background-color: #EEEEEE;
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        button {
+            background-color: rgba(255, 255, 255, 0.7);
+            border: none;
+            border-radius: 4px;
+            padding: 10px;
+            font-size: 20px;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+
+        button:hover {
+            background-color: rgba(255, 255, 255, 1);
+        }
+        .inputContainer {
+            display: flex;
+            flex-direction: row;
+            gap: 8px;
+            height: 30px;
+            align-items: center;
+        }
+    </style>
+</head>
+
+<body onload="init()">
+
+    <h2>Neovius Surface</h2>
+    <div class="inputContainer">
+        <p>U Min:</p>
+        <input type="number" name="UMin" id="UMin" min ="-5" max="5" step="0.1" value="-1.5707963267948966" onchange="update()" >
+    </div>
+    <div class="inputContainer">
+        <p>U Max:</p>
+        <input type="number" name="UMax" id="UMax" min ="-5" max="5" step="0.1" value="1.5707963267948966" onchange="update()" >
+    </div>
+    <div class="inputContainer">
+        <p>V Min:</p>
+        <input type="number" name="VMin" id="VMin" min ="-5" max="5" step="0.1" value="-1.5707963267948966" onchange="update()" >
+    </div>
+    <div class="inputContainer">
+        <p>V Max:</p>
+        <input type="number" name="VMax" id="VMax" min ="-5" max="5" step="0.1" value="1.5707963267948966" onchange="update()" >
+    </div>
+    <div class="inputContainer">
+        <p>U Steps:</p>
+        <input type="number" name="USteps" id="USteps" min ="2" max="100" step="1" value="20" onchange="update()" >
+    </div>
+    <div class="inputContainer">
+        <p>V Steps:</p>
+        <input type="number" name="VSteps" id="VSteps" min ="2" max="100" step="1" value="20" onchange="update()" >
+    </div>
+
+<div id="canvas-holder">
+   <canvas width="600" height="600" id="webglcanvas" style="background-color:red"></canvas>
+</div>
+
+<script src="./Utils/trackball-rotator.js"></script>
+    <script src="./Utils/m4.js"></script>
+    <script src="./shader.js"></script>
+    <script src="./StereoCamera.js"></script>
+    <script src="./main.js"></script>
+    <script src="./model.js"></script>
+
+
+</body></html>
