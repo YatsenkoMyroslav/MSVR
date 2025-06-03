@@ -1,41 +1,251 @@
 <!DOCTYPE html>
-<html lang="ua"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
-
-    <title>PA#1</title>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Anaglyphic Stereo Rendering with Tangible Interface</title>
     <style>
-        body {
-            background-color: #EEEEEE;
-            display: flex;
-            justify-content: center;
-            flex-direction: column;
-            align-items: center;
-        }
+      body {
+        background-color: #eeeeee;
+        font-family: Arial, sans-serif;
+      }
+      body {
+        background-color: #eeeeee;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+      }
 
-        button {
-            background-color: rgba(255, 255, 255, 0.7);
-            border: none;
-            border-radius: 4px;
-            padding: 10px;
-            font-size: 20px;
-            cursor: pointer;
-            margin-left: 5px;
-        }
+      button {
+        background-color: rgba(255, 255, 255, 0.7);
+        border: none;
+        border-radius: 4px;
+        padding: 10px;
+        font-size: 16px;
+        cursor: pointer;
+        margin-left: 5px;
+      }
 
-        button:hover {
-            background-color: rgba(255, 255, 255, 1);
-        }
-        .inputContainer {
-            display: flex;
-            flex-direction: row;
-            gap: 8px;
-            height: 30px;
-            align-items: center;
-        }
+      button:hover {
+        background-color: rgba(255, 255, 255, 1);
+      }
+      .inputContainer {
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+        height: 30px;
+        align-items: center;
+      }
+      .controls {
+        margin: 10px 0;
+        padding: 15px;
+        background-color: #f0f0f0;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        width: 800px;
+      }
+      .control-group {
+        margin-bottom: 10px;
+      }
+      label {
+        display: inline-block;
+        width: 200px;
+      }
+      input[type="range"] {
+        width: 300px;
+        vertical-align: middle;
+      }
+      input[type="text"] {
+        padding: 8px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        width: 320px;
+      }
+      .value-display {
+        display: inline-block;
+        width: 50px;
+        text-align: center;
+      }
+      .sensor-data {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px;
+        background-color: #e0e0e0;
+        border-radius: 5px;
+        margin-top: 10px;
+      }
+      .sensor-value {
+        font-weight: bold;
+      }
+      .websocket-controls {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: #f0f0f0;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        width: 800px;
+      }
+      .status-indicator {
+        font-weight: bold;
+      }
+      .info-box {
+        background-color: #e8f4ff;
+        border-left: 4px solid #4a90e2;
+        padding: 10px 15px;
+        margin: 10px 0;
+        border-radius: 0 5px 5px 0;
+        font-size: 14px;
+      }
+      .advanced-sensor-controls {
+        background-color: #f9f9f9;
+        border-radius: 5px;
+        padding: 10px;
+        margin-top: 15px;
+        border: 1px solid #e0e0e0;
+      }
+      .advanced-section-title {
+        font-size: 14px;
+        color: #555;
+        margin: 5px 0;
+        font-weight: bold;
+      }
     </style>
-</head>
 
-<body onload="init()">
+    <script src="./Utils/trackball-rotator.js"></script>
+    <script src="./Utils/m4.js"></script>
+    <script src="./StereoCamera.js"></script>
+    <script src="./shader.gpu"></script>
+    <script src="./Model.js"></script>
+    <script src="./main.js"></script>
+
+  </head>
+  <body onload="init()">
+    <h2 style="margin: 10px 0;">Anaglyphic Stereo Rendering with Tangible Interface</h2>
+
+    <p style="margin: 10px 0;">Surface of Revolution of a General Sinusoid controlled by smartphone orientation</p>
+
+    <div class="websocket-controls">
+      <h3 style="margin: 10px 0;">Sensor Server Connection</h3>
+      
+      <div class="info-box">
+        Connect to the Sensor Server running on your smartphone to control the 3D model's orientation using the magnetometer.
+      </div>
+      
+      <div class="control-group">
+        <label for="serverUrl">Sensor Server WebSocket URL:</label>
+        <input type="text" id="serverUrl" placeholder="ws://192.168.1.X:PORT" value="ws://192.168.0.210:8080/sensor/connect?type=android.sensor.magnetic_field">
+        <button id="connectButton">Connect</button>
+      </div>
+      
+      <div class="control-group">
+        <label>Connection Status:</label>
+        <span id="connectionStatus" class="status-indicator" style="color: red;">Disconnected</span>
+        <button id="toggleSensorButton" style="margin-left: 20px;">Toggle Sensor Control</button>
+        <span>Sensor Control: </span>
+        <span id="sensorStatus" class="status-indicator" style="color: red;">Disabled</span>
+      </div>
+      
+      <div class="sensor-data">
+        <div>
+          <span>Magnetometer X: </span>
+          <span id="magX" class="sensor-value">0.00</span>
+        </div>
+        <div>
+          <span>Magnetometer Y: </span>
+          <span id="magY" class="sensor-value">0.00</span>
+        </div>
+        <div>
+          <span>Magnetometer Z: </span>
+          <span id="magZ" class="sensor-value">0.00</span>
+        </div>
+      </div>
+      
+      <div class="advanced-sensor-controls">
+        <div class="advanced-section-title">Motion Smoothing Settings</div>
+        <div class="info-box" style="font-size: 12px; padding: 8px 12px;">
+          Adjust these parameters to fine-tune the smoothness of the model's movement. Higher smoothing factor means more responsive but less smooth. 
+          Larger update interval and history buffer size result in smoother but more delayed movement.
+        </div>
+        
+        <div class="control-group">
+          <label for="smoothingFactor">Smoothing Factor:</label>
+          <input type="range" id="smoothingFactor" min="0.1" max="1.0" step="0.1" value="0.3" oninput="updateSmoothingSettings()">
+          <span class="value-display" id="smoothingFactorValue">0.3</span>
+        </div>
+        
+        <div class="control-group">
+          <label for="updateInterval">Update Interval (ms):</label>
+          <input type="range" id="updateInterval" min="10" max="200" step="10" value="50" oninput="updateSmoothingSettings()">
+          <span class="value-display" id="updateIntervalValue">50</span>
+        </div>
+        
+        <div class="control-group">
+          <label for="historyLength">History Buffer Size:</label>
+          <input type="range" id="historyLength" min="1" max="10" step="1" value="5" oninput="updateSmoothingSettings()">
+          <span class="value-display" id="historyLengthValue">5</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <h3 style="margin: 10px 0;"> Stereo Camera Parameters</h3>
+
+      <div class="control-group">
+        <label for="eyeSeparation">Eye Separation: </label>
+        <input
+          type="range"
+          id="eyeSeparation"
+          min="0.1"
+          max="2.0"
+          step="0.1"
+          value="0.7"
+          oninput="updateEyeSepValue(this.value); updateParameters();"
+        />
+        <span class="value-display" id="eyeSepValue">0.7</span>
+      </div>
+
+      <div class="control-group">
+        <label for="fov">Field of View (radians): </label>
+        <input
+          type="range"
+          id="fov"
+          min="0.1"
+          max="1.0"
+          step="0.05"
+          value="0.4"
+          oninput="updateFovValue(this.value); updateParameters();"
+        />
+        <span class="value-display" id="fovValue">0.4</span>
+      </div>
+
+      <div class="control-group">
+        <label for="nearClipping">Near Clipping Distance: </label>
+        <input
+          type="range"
+          id="nearClipping"
+          min="1.0"
+          max="10.0"
+          step="0.5"
+          value="8.0"
+          oninput="updateNearValue(this.value); updateParameters();"
+        />
+        <span class="value-display" id="nearValue">8.0</span>
+      </div>
+
+      <div class="control-group">
+        <label for="convergence">Convergence Distance: </label>
+        <input
+          type="range"
+          id="convergence"
+          min="10.0"
+          max="20.0"
+          step="0.5"
+          value="14.0"
+          oninput="updateConvValue(this.value); updateParameters();"
+        />
+        <span class="value-display" id="convValue">14.0</span>
+      </div>
+    </div>
 
     <h2>Neovius Surface</h2>
     <div class="inputContainer">
@@ -63,16 +273,31 @@
         <input type="number" name="VSteps" id="VSteps" min ="2" max="100" step="1" value="20" onchange="update()" >
     </div>
 
-<div id="canvas-holder">
-   <canvas width="600" height="600" id="webglcanvas" style="background-color:red"></canvas>
-</div>
+    <div id="canvas-holder">
+      <canvas
+        width="800"
+        height="600"
+        id="webglcanvas"
+        style="border: 1px solid black"
+      ></canvas>
+    </div>
 
-<script src="./Utils/trackball-rotator.js"></script>
-    <script src="./Utils/m4.js"></script>
-    <script src="./shader.js"></script>
-    <script src="./StereoCamera.js"></script>
-    <script src="./main.js"></script>
-    <script src="./model.js"></script>
+    <script>
+      function updateEyeSepValue(value) {
+        document.getElementById("eyeSepValue").textContent = value;
+      }
 
+      function updateFovValue(value) {
+        document.getElementById("fovValue").textContent = value;
+      }
 
-</body></html>
+      function updateNearValue(value) {
+        document.getElementById("nearValue").textContent = value;
+      }
+
+      function updateConvValue(value) {
+        document.getElementById("convValue").textContent = value;
+      }
+    </script>
+  </body>
+</html>
